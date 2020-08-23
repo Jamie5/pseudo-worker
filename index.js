@@ -147,7 +147,10 @@ function PseudoWorker(path) {
         workerSelf = {
           postMessage: workerPostMessage,
           addEventListener: workerAddEventListener,
-          close: terminate
+          close: terminate,
+          navigator: window.navigator,
+          ImageData: window.ImageData,
+          XXX_IS_WORKER: true,
         };
         doEval(workerSelf, script);
         var currentListeners = postMessageListeners;
