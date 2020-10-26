@@ -4,8 +4,16 @@ function doEval(self, __pseudoworker_script) {
   /* jshint unused:false */
   (function () {
     /* jshint evil:true */
-    eval(__pseudoworker_script);
+    eval('var WorkerGlobalScope = self.WorkerGlobalScope; ' + __pseudoworker_script);
   }).call(global);
+}
+
+class WorkerSelf {
+  constructor(objs) {
+    for (const key of Object.keys(objs)) {
+      this[key] = objs[key];
+    }
+  }
 }
 
 function PseudoWorker(path) {
@@ -144,11 +152,15 @@ function PseudoWorker(path) {
     if (xhr.readyState === 4) {
       if (xhr.status >= 200 && xhr.status < 400) {
         script = xhr.responseText;
-        workerSelf = {
+        const workerSelfProps = {
           postMessage: workerPostMessage,
           addEventListener: workerAddEventListener,
-          close: terminate
+          close: terminate,
+          navigator: window.navigator,
+          ImageData: window.ImageData,
+          WorkerGlobalScope: WorkerSelf,
         };
+        workerSelf = new WorkerSelf(workerSelfProps);
         doEval(workerSelf, script);
         var currentListeners = postMessageListeners;
         postMessageListeners = [];
